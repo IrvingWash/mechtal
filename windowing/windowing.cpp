@@ -1,8 +1,8 @@
 #include "windowing.hpp"
 #include <cstdio>
+#include <optional>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
-#include <optional>
 
 bool Windowing::init() {
     bool ok = SDL_InitSubSystem(SDL_INIT_VIDEO);

@@ -78,33 +78,37 @@ template <> struct glz::meta<GLTF::MaterialAlphaMode> {
     static constexpr auto value = glz::enumerate(OPAQUE, MASK, BLEND);
 };
 
-static std::optional<GLTF::GLTF> parse_gltf_from_file(const char *path) {
+static std::optional<GLTF::GLTF> parse_gltf_from_file(std::filesystem::path path) {
     GLTF::GLTF gltf = {};
     
     std::string buffer;
 
-    glz::error_ctx error = glz::read_file_json<GLTF_READ_OPTS>(gltf, path, buffer);
+    glz::error_ctx error = glz::read_file_json<GLTF_READ_OPTS>(gltf, path.string(), buffer);
     if (error.ec != glz::error_code::none) {
         std::fprintf(
             stderr,
             "Failed to parse JSON: %s\n",
             glz::format_error(error, buffer).c_str()
         );
+
+        return std::nullopt;
     }
 
     return gltf;
 }
 
-std::optional<GLTF::GLTF> GLTF::parse_from_file(const char *path) {
-    std::filesystem::path extension = std::filesystem::path(path).extension();
+std::optional<GLTF::GLTF> GLTF::parse_from_file(std::string_view path) {
+    std::filesystem::path fs_path = std::filesystem::path(path);
+
+    std::filesystem::path extension = fs_path.extension();
 
     std::optional<GLTF> gltf = std::nullopt;
     if (extension == ".gltf") {
-        gltf = parse_gltf_from_file(path);
+        gltf = parse_gltf_from_file(fs_path);
     } else if (extension == ".glb") {
         // @Todo
     } else {
-        std::fprintf(stderr, "The provided file has an unknown extension: %s\n", path);
+        std::fprintf(stderr, "The provided file has an unknown extension: %s\n", fs_path.string().c_str());
     }
 
     return gltf;
