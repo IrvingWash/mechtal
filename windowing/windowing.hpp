@@ -10,14 +10,13 @@ namespace Windowing {
     };
 
     namespace CreateWindowFlags {
-        constexpr uint32_t VULKAN = 0x0000000010000000;
+        constexpr uint32_t VULKAN    = 0x0000000010000000;
         constexpr uint32_t RESIZABLE = 0x0000000000000020;
     }
 
     struct Display_Info {
-        uint32_t width;
-        uint32_t height;
-        float    dpi;
+        uint32_t width  = 0;
+        uint32_t height = 0;
     };
 
     bool init();

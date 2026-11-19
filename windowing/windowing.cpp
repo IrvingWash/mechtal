@@ -1,7 +1,6 @@
+#include "windowing.hpp"
 #include <cstdio>
 #include <SDL3/SDL.h>
-#include "windowing.hpp"
-#include "SDL3/SDL_mouse.h"
 
 bool Windowing::init() {
     bool ok = SDL_InitSubSystem(SDL_INIT_VIDEO);
@@ -15,6 +14,10 @@ bool Windowing::init() {
 
 void Windowing::deinit() {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
+
+    if (SDL_WasInit(0) == 0) {
+        SDL_Quit();
+    }
 }
 
 Windowing::Window Windowing::create_window(
@@ -38,7 +41,8 @@ void Windowing::destroy_window(Window &window) {
 }
 
 std::pair<uint32_t, uint32_t> Windowing::get_renderable_size(const Window &window) {
-    int32_t width, height;
+    int width  = 0;
+    int height = 0;
     SDL_GetWindowSizeInPixels(
         static_cast<SDL_Window*>(window.handle),
         &width,
@@ -49,8 +53,12 @@ std::pair<uint32_t, uint32_t> Windowing::get_renderable_size(const Window &windo
 }
 
 std::vector<uint32_t> Windowing::get_display_ids() {
-    int32_t count;
+    int32_t count = 0;
     SDL_DisplayID *sdl_display_ids = SDL_GetDisplays(&count);
+    if (!sdl_display_ids) {
+        std::fprintf(stderr, "Failed to get display ids: %s\n", SDL_GetError());
+        return {};
+    }
 
     std::vector<uint32_t> result(sdl_display_ids, sdl_display_ids + count);
 
@@ -59,13 +67,16 @@ std::vector<uint32_t> Windowing::get_display_ids() {
     return result;
 }
 
-Windowing::Display_Info get_display_info(uint32_t display_id) {
+Windowing::Display_Info Windowing::get_display_info(uint32_t display_id) {
     const SDL_DisplayMode *sdl_display_mode = SDL_GetDesktopDisplayMode(display_id);
+    if (!sdl_display_mode) {
+        std::fprintf(stderr, "Failed to get display mode: %s\n", SDL_GetError());
+        return {};
+    }
 
     Windowing::Display_Info result = {
         .width  = static_cast<uint32_t>(sdl_display_mode->w),
         .height = static_cast<uint32_t>(sdl_display_mode->h),
-        .dpi    = sdl_display_mode->pixel_density,
     };
 
     return result;
@@ -78,7 +89,7 @@ void Windowing::set_window_relative_cursor_mode(const Window &window, bool enabl
     );
 
     if (!ok) {
-        std::fprintf(stderr, "Failed to set window relative cursor mode windowing: %s\n", SDL_GetError());
+        std::fprintf(stderr, "Failed to set window relative cursor mode: %s\n", SDL_GetError());
     }
 }
 
