@@ -3,7 +3,6 @@
 #include "scancode.hpp"
 #include <cstdint>
 #include <vector>
-#include <utility>
 #include <array>
 
 namespace Input {
@@ -26,6 +25,11 @@ namespace Input {
         };
     };
 
+    struct Position {
+        float x;
+        float y;
+    };
+
     namespace KeyState {
         constexpr uint8_t DOWN     = 1 << 0;
         constexpr uint8_t PRESSED  = 1 << 1;
@@ -33,9 +37,9 @@ namespace Input {
     }
 
     struct MouseState {
-        std::pair<float, float> cursor_position = {};
-        std::pair<float, float> cursor_delta    = {};
-        std::pair<float, float> wheel_delta     = {};
+        Position cursor_position = {};
+        Position cursor_delta    = {};
+        Position wheel_delta     = {};
 
         uint8_t left_button_state   = 0;
         uint8_t right_button_state  = 0;
@@ -49,7 +53,7 @@ namespace Input {
 
         MouseState mouse_state = {};
         std::array<uint8_t, size_t(Scancode::COUNT)> key_states = {};
-
-        void update();
     };
+
+    void update(State &state);
 }

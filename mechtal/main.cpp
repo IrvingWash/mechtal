@@ -34,7 +34,7 @@ int main() {
     init();
 
     while (!game.should_quit) {
-        game.input_state.update();
+        Input::update(game.input_state);
 
         for (const Input::WindowEvent &event: game.input_state.window_events) {
             switch (event.kind) {

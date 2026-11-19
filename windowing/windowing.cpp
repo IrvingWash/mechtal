@@ -40,7 +40,7 @@ void Windowing::destroy_window(Window &window) {
     window.handle = nullptr;
 }
 
-std::pair<uint32_t, uint32_t> Windowing::get_renderable_size(const Window &window) {
+Windowing::Size Windowing::get_renderable_size(const Window &window) {
     int width  = 0;
     int height = 0;
     SDL_GetWindowSizeInPixels(
@@ -49,7 +49,12 @@ std::pair<uint32_t, uint32_t> Windowing::get_renderable_size(const Window &windo
         &height
     );
 
-    return std::pair(width, height);
+    Size size = {
+        .width = uint32_t(width),
+        .height = uint32_t(height),
+    };
+
+    return size;
 }
 
 std::vector<uint32_t> Windowing::get_display_ids() {
