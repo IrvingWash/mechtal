@@ -11,7 +11,14 @@ This is a port to C++ of my Jai game engine, which is here: [metal](https://gith
 
 ## Building
 
+Debug:
 ```bash
-cmake -B build
-cmake --build build
+cmake -B build-debug -DSANITIZE=ON
+cmake --build-debug build
+```
+
+Release:
+```bash
+cmake -B build-release -DCMAKE_BUILD_TYPE=Release
+cmake --build-release build
 ```

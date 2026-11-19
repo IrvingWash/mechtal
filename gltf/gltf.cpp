@@ -25,8 +25,7 @@ template <> struct glz::meta<GLTF::MaterialOcclusionTextureInfo> : glz::camel_ca
 template <> struct glz::meta<GLTF::Material>                     : glz::camel_case {};
 template <> struct glz::meta<GLTF::Sampler>                      : glz::camel_case {};
 template <> struct glz::meta<GLTF::Skin>                         : glz::camel_case {};
-template <>
-struct glz::meta<GLTF::Node> {
+template <> struct glz::meta<GLTF::Node> {
     static constexpr auto modify = glz::object("matrix", &GLTF::Node::column_major_matrix);
 };
 template <> struct glz::meta<GLTF::MeshPrimitiveAttribute> {
