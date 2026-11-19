@@ -9,6 +9,10 @@
 static constexpr glz::opts GLTF_READ_OPTS = { .error_on_unknown_keys = false };
 
 template <> struct glz::meta<GLTF::GLTF>                         : glz::camel_case {};
+template <> struct glz::meta<GLTF::Accessor>                     : glz::camel_case {};
+template <> struct glz::meta<GLTF::AccessorSparse>               : glz::camel_case {};
+template <> struct glz::meta<GLTF::AccessorSparseIndices>        : glz::camel_case {};
+template <> struct glz::meta<GLTF::AccessorSparseValues>         : glz::camel_case {};
 template <> struct glz::meta<GLTF::Asset>                        : glz::camel_case {};
 template <> struct glz::meta<GLTF::Buffer>                       : glz::camel_case {};
 template <> struct glz::meta<GLTF::BufferView>                   : glz::camel_case {};

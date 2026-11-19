@@ -10,6 +10,55 @@
 namespace GLTF {
     constexpr uint32_t SUPPORTED_GLTF_VERSION = 2;
 
+    enum class AccessorComponentType {
+        BYTE           = 5120,
+        UNSIGNED_BYTE  = 5121,
+        SHORT          = 5122,
+        UNSIGNED_SHORT = 5123,
+        UNSIGNED_INT   = 5125,
+        FLOAT          = 5126,
+    };
+
+    enum class AccessorType {
+        SCALAR,
+        VEC2,
+        VEC3,
+        VEC4,
+        MAT2,
+        MAT3,
+        MAT4,
+    };
+
+    struct AccessorSparseIndices {
+        uint32_t              buffer_view    = 0;
+        uint32_t              byte_offset    = 0 ;
+        AccessorComponentType component_type = AccessorComponentType::FLOAT;
+    };
+
+    struct AccessorSparseValues {
+        uint32_t buffer_view = 0;
+        uint32_t byte_offset = 0;
+    };
+
+    struct AccessorSparse {
+        uint32_t              count   = 0;
+        AccessorSparseIndices indices = {};
+        AccessorSparseValues  values  = {};
+    };
+
+    struct Accessor {
+        std::optional<uint32_t>       buffer_view;
+        uint32_t                      byte_offset = 0;
+        AccessorComponentType         component_type = AccessorComponentType::FLOAT;
+        bool                          normalized = false;
+        uint32_t                      count = 0;
+        AccessorType                  type = AccessorType::SCALAR;
+        std::vector<float>            max = {};
+        std::vector<float>            min = {};
+        std::optional<AccessorSparse> sparse;
+        std::optional<std::string>    name;
+    };
+
     enum class AnimationInterpolation {
         LINEAR,
         STEP,
@@ -263,6 +312,7 @@ namespace GLTF {
     };
 
     struct GLTF {
+        std::vector<Accessor>   accessors    = {};
         std::vector<Animation>  animations   = {};
         Asset                   asset        = {};
         std::vector<Buffer>     buffers      = {};
