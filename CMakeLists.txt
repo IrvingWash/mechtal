@@ -2,9 +2,10 @@ cmake_minimum_required(VERSION 3.23)
 
 project(mechtal)
 
-add_executable(mechtal)
+set(CMAKE_CXX_STANDARD 20)
 
-target_sources(mechtal
-    PRIVATE
-        mechtal/main.cpp
-)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+add_subdirectory(mechtal)
+
+add_subdirectory(windowing)
