@@ -46,6 +46,7 @@ void Input::update(Input::State &state) {
             case SDL_EVENT_QUIT: {
                 WindowEvent event = {
                     .kind = WindowEventKind::QUIT,
+                    .quit = true,
                 };
 
                 state.window_events.push_back(event);

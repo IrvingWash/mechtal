@@ -21,7 +21,8 @@ namespace Input {
         WindowEventKind kind = WindowEventKind::NONE;
 
         union {
-            Window_Pixel_Size_Changed_Event window_pixel_size_changed = {};
+            bool                            quit                      = false;
+            Window_Pixel_Size_Changed_Event window_pixel_size_changed;
         };
     };
 
