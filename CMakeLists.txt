@@ -10,3 +10,4 @@ add_subdirectory(mechtal)
 
 add_subdirectory(windowing)
 add_subdirectory(input)
+add_subdirectory(gltf)
