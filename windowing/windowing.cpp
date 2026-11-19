@@ -1,6 +1,7 @@
 #include "windowing.hpp"
 #include <cstdio>
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_vulkan.h>
 
 bool Windowing::init() {
     bool ok = SDL_InitSubSystem(SDL_INIT_VIDEO);
@@ -96,6 +97,38 @@ void Windowing::set_window_relative_cursor_mode(const Window &window, bool enabl
     if (!ok) {
         std::fprintf(stderr, "Failed to set window relative cursor mode: %s\n", SDL_GetError());
     }
+}
+
+VkSurfaceKHR Windowing::create_surface_for_vulkan(
+    const Window &window,
+    VkInstance instance,
+    const VkAllocationCallbacks *allocator
+) {
+    VkSurfaceKHR surface = VK_NULL_HANDLE;
+
+    bool ok = SDL_Vulkan_CreateSurface(
+        static_cast<SDL_Window*>(window.handle),
+        instance,
+        allocator,
+        &surface
+    );
+    if (!ok) {
+        std::fprintf(stderr, "Failed to create surface: %s\n", SDL_GetError());
+        return VK_NULL_HANDLE;
+    }
+
+    return surface;
+}
+
+std::vector<const char*> Windowing::get_vulkan_instance_extensions() {
+    Uint32 count = 0;
+    auto raw_extensions = SDL_Vulkan_GetInstanceExtensions(&count);
+    if (!raw_extensions) {
+        std::fprintf(stderr, "Failed to get Vulkan instance extensions: %s\n", SDL_GetError());
+        return {};
+    }
+
+    return std::vector(raw_extensions, raw_extensions + count);
 }
 
 static_assert(Windowing::CreateWindowFlags::VULKAN    == SDL_WINDOW_VULKAN);

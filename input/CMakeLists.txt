@@ -10,6 +10,9 @@ target_sources(input
             input.hpp
 )
 
+set(SDL_SHARED       OFF CACHE BOOL "" FORCE)
+set(SDL_STATIC       ON  CACHE BOOL "" FORCE)
+set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
 include(FetchContent)
 FetchContent_Declare(SDL3
     GIT_REPOSITORY https://github.com/libsdl-org/SDL

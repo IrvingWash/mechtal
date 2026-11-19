@@ -1,8 +1,9 @@
 #pragma once
 
+#include "vulkan/vulkan_core.h"
 #include <cstdint>
-#include <utility>
 #include <vector>
+#include <vulkan/vulkan.h>
 
 namespace Windowing {
     struct Window {
@@ -37,4 +38,18 @@ namespace Windowing {
     Display_Info get_display_info(uint32_t display_id);
 
     void set_window_relative_cursor_mode(const Window &window, bool enabled);
+
+
+
+    // =========================================================================
+    // Vulkan-specific
+    // =========================================================================
+
+    VkSurfaceKHR create_surface_for_vulkan(
+        const Window &window,
+        VkInstance instance,
+        VkAllocationCallbacks const *allocator = VK_NULL_HANDLE
+    );
+
+    std::vector<const char*> get_vulkan_instance_extensions();
 }
