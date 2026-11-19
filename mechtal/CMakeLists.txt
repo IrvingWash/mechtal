@@ -8,4 +8,5 @@ target_sources(mechtal
 target_link_libraries(mechtal
     PRIVATE
         windowing
+        input
 )

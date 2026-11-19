@@ -1,15 +1,20 @@
 #include "windowing.hpp"
+#include "input.hpp"
 #include <cassert>
 
 class Game {
     public:
-    Windowing::Window window = {0};
+    Windowing::Window window      = {};
+    Input::State      input_state = {};
+
+    bool should_quit = false;
 };
 
 Game game;
 
 void init() {
-    Windowing::init();
+    bool ok = Windowing::init();
+    assert(ok);
 
     game.window = Windowing::create_window(
         "",
@@ -27,5 +32,18 @@ void deinit() {
 
 int main() {
     init();
+
+    while (!game.should_quit) {
+        game.input_state.update();
+
+        for (const Input::WindowEvent &event: game.input_state.window_events) {
+            switch (event.kind) {
+                case Input::WindowEventKind::QUIT:
+                    game.should_quit = true;
+                    break;
+            }
+        }
+    }
+
     deinit();
 }
