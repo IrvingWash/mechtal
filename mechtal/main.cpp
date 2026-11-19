@@ -1,6 +1,7 @@
 #include "windowing.hpp"
 #include "input.hpp"
 #include <cassert>
+#include <optional>
 
 class Game {
     public:
@@ -16,13 +17,14 @@ void init() {
     bool ok = Windowing::init();
     assert(ok);
 
-    game.window = Windowing::create_window(
+    std::optional<Windowing::Window> window = Windowing::create_window(
         "",
         800,
         600,
         Windowing::CreateWindowFlags::VULKAN | Windowing::CreateWindowFlags::RESIZABLE
     );
-    assert(game.window.handle != nullptr);
+    assert(window.has_value());
+    game.window = window.value();
 }
 
 void deinit() {

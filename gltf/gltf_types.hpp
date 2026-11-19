@@ -56,8 +56,6 @@ namespace GLTF {
         std::optional<std::string> uri;
         uint32_t                   byte_length = 0;
         std::optional<std::string> name;
-
-        std::vector<uint8_t> bytes = {};
     };
 
     enum class BufferViewTarget {
@@ -278,6 +276,6 @@ namespace GLTF {
         std::optional<uint32_t> scene;
         std::vector<Scene>      scenes       = {};
         std::vector<Skin>       skins        = {};
-        std::vector<Texture>   textures      = {};
+        std::vector<Texture>    textures     = {};
     };
 }

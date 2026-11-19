@@ -3,6 +3,7 @@
 #include "vulkan/vulkan_core.h"
 #include <cstdint>
 #include <vector>
+#include <optional>
 #include <vulkan/vulkan.h>
 
 namespace Windowing {
@@ -28,16 +29,16 @@ namespace Windowing {
     bool init();
     void deinit();
 
-    Window create_window(const char *name, int32_t width, int32_t height, uint32_t flags);
+    std::optional<Window> create_window(const char *name, int32_t width, int32_t height, uint32_t flags);
     void   destroy_window(Window &window);
 
     Size get_renderable_size(const Window &window);
 
     std::vector<uint32_t> get_display_ids();
 
-    Display_Info get_display_info(uint32_t display_id);
+    std::optional<Display_Info> get_display_info(uint32_t display_id);
 
-    void set_window_relative_cursor_mode(const Window &window, bool enabled);
+    bool set_window_relative_cursor_mode(const Window &window, bool enabled);
 
 
 

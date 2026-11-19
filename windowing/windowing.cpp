@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
+#include <optional>
 
 bool Windowing::init() {
     bool ok = SDL_InitSubSystem(SDL_INIT_VIDEO);
@@ -21,7 +22,7 @@ void Windowing::deinit() {
     }
 }
 
-Windowing::Window Windowing::create_window(
+std::optional<Windowing::Window> Windowing::create_window(
     const char *name,
     int32_t width,
     int32_t height,
@@ -30,6 +31,7 @@ Windowing::Window Windowing::create_window(
     SDL_Window *sdl_window = SDL_CreateWindow(name, width, height, flags);
     if (!sdl_window) {
         std::fprintf(stderr, "Failed to create window: %s\n", SDL_GetError());
+        return std::nullopt;
     }
 
     return Window{ .handle = sdl_window };
@@ -73,11 +75,11 @@ std::vector<uint32_t> Windowing::get_display_ids() {
     return result;
 }
 
-Windowing::Display_Info Windowing::get_display_info(uint32_t display_id) {
+std::optional<Windowing::Display_Info> Windowing::get_display_info(uint32_t display_id) {
     const SDL_DisplayMode *sdl_display_mode = SDL_GetDesktopDisplayMode(display_id);
     if (!sdl_display_mode) {
         std::fprintf(stderr, "Failed to get display mode: %s\n", SDL_GetError());
-        return {};
+        return std::nullopt;
     }
 
     Windowing::Display_Info result = {
@@ -88,7 +90,7 @@ Windowing::Display_Info Windowing::get_display_info(uint32_t display_id) {
     return result;
 }
 
-void Windowing::set_window_relative_cursor_mode(const Window &window, bool enabled) {
+bool Windowing::set_window_relative_cursor_mode(const Window &window, bool enabled) {
     bool ok = SDL_SetWindowRelativeMouseMode(
         static_cast<SDL_Window*>(window.handle),
         enabled
@@ -97,6 +99,8 @@ void Windowing::set_window_relative_cursor_mode(const Window &window, bool enabl
     if (!ok) {
         std::fprintf(stderr, "Failed to set window relative cursor mode: %s\n", SDL_GetError());
     }
+
+    return ok;
 }
 
 VkSurfaceKHR Windowing::create_surface_for_vulkan(
