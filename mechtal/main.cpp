@@ -15,14 +15,16 @@ class Game {
 Game game;
 
 void init() {
-    bool ok = Windowing::init();
+    std::string error = {};
+    bool ok = Windowing::init(&error);
     assert(ok);
 
     std::optional<Windowing::Window> window = Windowing::create_window(
         "",
         800,
         600,
-        Windowing::CreateWindowFlags::VULKAN | Windowing::CreateWindowFlags::RESIZABLE
+        Windowing::CreateWindowFlags::VULKAN | Windowing::CreateWindowFlags::RESIZABLE,
+        &error
     );
     assert(window.has_value());
     game.window = window.value();
