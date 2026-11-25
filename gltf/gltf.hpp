@@ -4,5 +4,5 @@
 #include <optional>
 
 namespace GLTF {
-    std::optional<GLTF> parse_from_file(std::string_view path);
+    std::optional<GLTF> parse_from_file(const std::string_view &path, std::string *error);
 }

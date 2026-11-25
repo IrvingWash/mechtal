@@ -3,11 +3,16 @@
 #include "glb_types.hpp"
 #include <filesystem>
 #include <cstdio>
+#include <optional>
+#include <format>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <cstdint>
 #include <glaze/core/context.hpp>
 #include <glaze/glaze.hpp>
 #include <glaze/json/read.hpp>
 #include <glaze/util/key_transformers.hpp>
-#include <optional>
 
 static constexpr glz::opts GLTF_READ_OPTS = {
     .null_terminated       = false,
@@ -99,48 +104,56 @@ template <> struct glz::meta<GLTF::MaterialAlphaMode> {
     static constexpr auto value = glz::enumerate(OPAQUE, MASK, BLEND);
 };
 
-static std::optional<GLTF::GLTF> parse_gltf_from_file(const std::filesystem::path &path) {
+static std::nullopt_t fail(std::string *error, std::string_view message) {
+    if (error) {
+        *error = message;
+    }
+
+    return std::nullopt;
+}
+
+static std::optional<GLTF::GLTF> parse_gltf_from_file(const std::filesystem::path &path, std::string *error) {
     GLTF::GLTF gltf = {};
 
     std::string buffer;
 
-    glz::error_ctx error = glz::read_file_json<GLTF_READ_OPTS>(gltf, path.string(), buffer);
-    if (error.ec != glz::error_code::none) {
-        std::fprintf(
-            stderr,
-            "Failed to parse JSON: %s\n",
-            glz::format_error(error, buffer).c_str()
+    glz::error_ctx glz_error = glz::read_file_json<GLTF_READ_OPTS>(gltf, path.string(), buffer);
+    if (glz_error.ec != glz::error_code::none) {
+        return fail(
+            error,
+            std::format(
+                "Failed to parse JSON: {}",
+                glz::format_error(glz_error, buffer)
+            )
         );
-
-        return std::nullopt;
     }
 
     return gltf;
 }
 
-static std::optional<GLTF::GLTF> parse_glb_from_file(const std::filesystem::path &path) {
-    std::error_code error;
-    uintmax_t file_size = std::filesystem::file_size(path, error);
-    if (error) {
-        std::fprintf(
-            stderr,
-            "Failed to get size of %s: %s\n",
-            path.string().c_str(),
-            error.message().c_str()
+static std::optional<GLTF::GLTF> parse_glb_from_file(const std::filesystem::path &path, std::string *error) {
+    std::error_code file_error;
+    uintmax_t file_size = std::filesystem::file_size(path, file_error);
+    if (file_error) {
+        return fail(
+            error,
+            std::format(
+                "Failed to get size of {}: {}",
+                path.string(),
+                file_error.message()
+            )
         );
-
-        return std::nullopt;
     }
 
     std::ifstream file(path,std::ios::binary);
     if (!file) {
-        std::fprintf(
-            stderr,
-            "Failed to open %s\n",
-            path.string().c_str()
+        return fail(
+            error,
+            std::format(
+                "Failed to open {}",
+                path.string()
+            )
         );
-
-        return std::nullopt;
     }
 
     std::vector<uint8_t> file_bytes(static_cast<size_t>(file_size));
@@ -150,8 +163,10 @@ static std::optional<GLTF::GLTF> parse_glb_from_file(const std::filesystem::path
             static_cast<std::streamsize>(file_size)
         )
     ) {
-        std::fprintf(stderr, "Failed to read %s\n", path.string().c_str());
-        return std::nullopt;
+        return fail(
+            error,
+            std::format("Failed to read {}", path.string())
+        );
     }
 
     file.close();
@@ -163,24 +178,23 @@ static std::optional<GLTF::GLTF> parse_glb_from_file(const std::filesystem::path
         locator += sizeof(GLB::Header);
 
         if (header->magic != GLB::MAGIC) {
-            std::fprintf(stderr, "The provided file has a wrong header magic number\n");
-            return std::nullopt;
+            return fail(error, "The provided file has a wrong header magic number");
         }
         if (header->version != GLB::SUPPORTED_GLB_VERSION) {
-            std::fprintf(
-                stderr,
-                "The supported GLB version is %u, but the provided file has %u\n",
-                GLB::SUPPORTED_GLB_VERSION,
-                header->version
+            return fail(
+                error,
+                std::format(
+                    "The supported GLB version is {}, but the provided file has {}",
+                    GLB::SUPPORTED_GLB_VERSION,
+                    header->version
+                )
             );
-            return std::nullopt;
         }
         if (header->length > file_bytes.size()) {
-            std::fprintf(
-                    stderr,
-                    "The provided file is smaller than the length specified in it's header\n"
+            return fail(
+                error,
+                "The provided file is smaller than the length specified in its header"
             );
-            return std::nullopt;
         }
     }
 
@@ -190,12 +204,10 @@ static std::optional<GLTF::GLTF> parse_glb_from_file(const std::filesystem::path
         locator += sizeof(GLB::ChunkHeader);
 
         if (first_chunk_header->type != GLB::ChunkType::JSON) {
-            std::fprintf(stderr, "The provided file is missing the JSON chunk\n");
-            return std::nullopt;
+            return fail(error, "The provided file is missing the JSON chunk");
         }
         if (first_chunk_header->length > file_bytes.size() - locator) {
-            std::fprintf(stderr, "The provided file's header chunk is bigger than the file itself\n");
-            return std::nullopt;
+            return fail(error, "The provided file's header chunk is bigger than the file itself");
         }
 
         json = std::string_view(
@@ -209,31 +221,32 @@ static std::optional<GLTF::GLTF> parse_glb_from_file(const std::filesystem::path
     glz::error_ctx glz_error = glz::read<GLTF_READ_OPTS>(gltf, json);
 
     if (glz_error.ec != glz::error_code::none) {
-        std::fprintf(
-            stderr,
-            "Failed to parse JSON: %s\n",
-            glz::format_error(glz_error, json).c_str()
+        return fail(
+            error,
+            std::format(
+                "Failed to parse JSON: {}",
+                glz::format_error(glz_error, json)
+            )
         );
-
-        return std::nullopt;
     }
 
     return gltf;
 }
 
-std::optional<GLTF::GLTF> GLTF::parse_from_file(std::string_view path) {
+std::optional<GLTF::GLTF> GLTF::parse_from_file(const std::string_view &path, std::string *error) {
     std::filesystem::path fs_path = std::filesystem::path(path);
 
     std::filesystem::path extension = fs_path.extension();
 
-    std::optional<GLTF> gltf = std::nullopt;
     if (extension == ".gltf") {
-        gltf = parse_gltf_from_file(fs_path);
-    } else if (extension == ".glb") {
-        gltf = parse_glb_from_file(fs_path);
-    } else {
-        std::fprintf(stderr, "The provided file has an unknown extension: %s\n", fs_path.string().c_str());
+        return parse_gltf_from_file(fs_path, error);
+    }
+    if (extension == ".glb") {
+        return parse_glb_from_file(fs_path, error);
     }
 
-    return gltf;
+    return fail(
+        error,
+        std::format("The provided file has an unknown extension: {}", fs_path.string())
+    );
 }

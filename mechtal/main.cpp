@@ -36,6 +36,12 @@ void deinit() {
 int main() {
     init();
 
+    std::string error = {};
+    auto suzanne = GLTF::parse_from_file("../../Models/Suzanne/gltf/Suzanne.gltf", &error);
+    assert(error == "" && suzanne.has_value());
+    auto x_12_mech = GLTF::parse_from_file("../../Models/rex-12_mech.glb", &error);
+    assert(error == "" && x_12_mech.has_value());
+
     while (!game.should_quit) {
         Input::update(game.input_state);
 
