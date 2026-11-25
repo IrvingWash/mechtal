@@ -100,6 +100,44 @@ static std::optional<GLTF::GLTF> parse_gltf_from_file(std::filesystem::path path
     return gltf;
 }
 
+static std::optional<GLTF::GLTF> parse_glb_from_file(std::filesystem::path path) {
+    std::error_code error;
+    uintmax_t file_size = std::filesystem::file_size(path, error);
+    if (error) {
+        std::fprintf(
+            stderr,
+            "Failed to get size of %s: %s\n",
+            path.string().c_str(),
+            error.message().c_str()
+        );
+
+        return std::nullopt;
+    }
+
+    std::ifstream file(path,std::ios::binary);
+    if (!file) {
+        std::fprintf(
+            stderr,
+            "Failed to open %s\n",
+            path.string().c_str()
+        );
+
+        return std::nullopt;
+    }
+
+    std::vector<uint8_t> file_bytes(static_cast<size_t>(file_size));
+    if (
+        !file.read(
+            reinterpret_cast<char *>(file_bytes.data()),
+            static_cast<std::streamsize>(file_size)
+        )
+    ) {
+        std::fprintf(stderr, "Failed to read %s\n", path.string().c_str());
+        return std::nullopt;
+    }
+    // @Todo: incomplete
+}
+
 std::optional<GLTF::GLTF> GLTF::parse_from_file(std::string_view path) {
     std::filesystem::path fs_path = std::filesystem::path(path);
 
