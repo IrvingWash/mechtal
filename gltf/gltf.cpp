@@ -99,7 +99,7 @@ template <> struct glz::meta<GLTF::MaterialAlphaMode> {
     static constexpr auto value = glz::enumerate(OPAQUE, MASK, BLEND);
 };
 
-static std::optional<GLTF::GLTF> parse_gltf_from_file(std::filesystem::path path) {
+static std::optional<GLTF::GLTF> parse_gltf_from_file(const std::filesystem::path &path) {
     GLTF::GLTF gltf = {};
 
     std::string buffer;
@@ -118,7 +118,7 @@ static std::optional<GLTF::GLTF> parse_gltf_from_file(std::filesystem::path path
     return gltf;
 }
 
-static std::optional<GLTF::GLTF> parse_glb_from_file(std::filesystem::path path) {
+static std::optional<GLTF::GLTF> parse_glb_from_file(const std::filesystem::path &path) {
     std::error_code error;
     uintmax_t file_size = std::filesystem::file_size(path, error);
     if (error) {
@@ -156,11 +156,10 @@ static std::optional<GLTF::GLTF> parse_glb_from_file(std::filesystem::path path)
 
     file.close();
 
-    uint64_t locator = 0;
+    size_t locator = 0;
 
     { // Parsing and validating the header
-        GLB::Header *header = nullptr;
-        header = reinterpret_cast<GLB::Header*>(file_bytes.data());
+        GLB::Header *header = reinterpret_cast<GLB::Header*>(file_bytes.data());
         locator += sizeof(GLB::Header);
 
         if (header->magic != GLB::MAGIC) {
@@ -187,12 +186,11 @@ static std::optional<GLTF::GLTF> parse_glb_from_file(std::filesystem::path path)
 
     std::string_view json = {};
     { // Parsing the first chunk header
-        GLB::ChunkHeader *first_chunk_header = nullptr;
-        first_chunk_header = reinterpret_cast<GLB::ChunkHeader*>(file_bytes.data() + locator);
+        GLB::ChunkHeader *first_chunk_header = reinterpret_cast<GLB::ChunkHeader*>(file_bytes.data() + locator);
         locator += sizeof(GLB::ChunkHeader);
 
         if (first_chunk_header->type != GLB::ChunkType::JSON) {
-            std::fprintf(stderr, "The provided file is missing the JSON header\n");
+            std::fprintf(stderr, "The provided file is missing the JSON chunk\n");
             return std::nullopt;
         }
         if (first_chunk_header->length > file_bytes.size() - locator) {
