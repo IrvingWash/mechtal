@@ -1,5 +1,6 @@
 #include "windowing.hpp"
 #include "input.hpp"
+#include "gltf.hpp"
 #include <cassert>
 #include <optional>
 
